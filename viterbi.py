@@ -45,7 +45,7 @@ def viterbi(states, observations, start_probability, transition_probability, emi
         V.append({})
         newPath = {}
         for state in states:
-            # 计算往下一层走的时候最优路径，也就是概率最大的那天路径
+            # 计算往下一层走的时候最优路径，也就是概率最大的那条路径
             (prop, st) = max([V[level - 1][s] * transition_probability[s][state] * emission_probability[state][observations[level]], s] for s in states)
             V[level][state] = prop
             newPath[state] = path[st] + [state]
