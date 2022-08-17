@@ -77,6 +77,13 @@ def tfidfExtract(words, pos=False, keywordNumber = 10):
     tfidfModel = TfIdf(idfDic, defaultDic, words, keywordNumber)
     tfidfModel.getTfIdf()
 
+def textrankExtract(text, pos=False, keywordNumber = 10):
+    textrank = analyse.textrank
+    keywords = textrank(text, keywordNumber)
+    print('/'.join(keywords))
+    # for keyword in keywords:
+    #     print(keyword + "/"),
+
 class TfIdf(object):
     def __init__(self, idf, defaultIdf, words, number):
         self.words = words
@@ -122,5 +129,7 @@ words = text2Words(text, pos)
 words = wordFilter(words, pos)
 print("TF-IDF:")
 tfidfExtract(words)
+print("TextRank:")
+textrankExtract(text)
 
 
