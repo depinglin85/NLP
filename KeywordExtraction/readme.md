@@ -40,7 +40,9 @@ TextRank算法的基本思想来源于Google的PageRank算法，PageRank算法�
 $In(V_{i})$ 表示 $V_{i}$ 的入链集合，$Out(V{_j})$ 为 $V_{j}$ 的出链是集合，|$Out(V{_j})$| 为出链的数量。
 一些孤立网页（没有出链与入链）的得分会为0，这样的话，这些页面就会永远无法被检索到。另外为了避免这样的问题，引入一个阻尼系数。
 数学表达式：
-$$S(V_{i}) = (1-d)+d\times\sum_{V_j\in In(V_{i})}\left(\frac{w_{ij}}{\sum_{V_k\in Out(V_i)}w{_{jk}}}\times WS(V_j)\right)$$
+$$
+S(V_{i}) = (1-d)+d\times\sum_{V_j\in In(V_{i})}\left(\frac{w_{ij}}{\sum_{V_k\in Out(V_i)}w{_{jk}}}\times WS(V_j)\right)
+$$
 
 当TextRank应用到关键词提取是，与自动摘要中主要有以下2点不同
 - 词与词之间的关联性没有权重
