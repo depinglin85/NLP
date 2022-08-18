@@ -84,6 +84,11 @@ def textrankExtract(text, pos=False, keywordNumber = 10):
     # for keyword in keywords:
     #     print(keyword + "/"),
 
+def topicExtract(wordList, model, pos=False, keywordNumber=10):
+    docList = loadData(pos)
+    topicModel = TopicModel(docList, keywordNumber, model)
+    topicModel.getSimword(wordList)
+
 class TfIdf(object):
     def __init__(self, idf, defaultIdf, words, number):
         self.words = words
@@ -110,6 +115,71 @@ class TfIdf(object):
             print(key + "/", end="")
         print()
 
+class TopicModel(object):
+    def __init__(self, docList, keywordNumber, model='LDA', numberTopic=4):
+        # 使用gensim接口，将文本转为向量化表示
+        # 先构建词空间
+        self.dictionary = corpora.Dictionary(docList)
+        # 使用BOW模型向量化
+        corpus = [self.dictionary.doc2bow(doc) for doc in docList]
+        self.tfidfModel = models.TfidfModel(corpus)
+        self.corpusTfidf = self.tfidfModel[corpus]
+        self.keywordNumber = keywordNumber
+        self.numberTopic = numberTopic
+        if model == 'LSI':
+            self.model = self.trainLsi()
+        else:
+            self.model = self.trainLda()
+        # 得到数据集的主题-词分布
+        wordDic = self.wordDictionary(docList)
+        self.wordTopicDic = self.getWordTopic(wordDic)
+    def trainLsi(self):
+        lsi = models.LsiModel(self.corpusTfidf, id2word=self.dictionary, num_topics=self.numberTopic)
+        return lsi
+    def trainLda(self):
+        lda = models.LdaModel(self.corpusTfidf, id2word=self.dictionary, num_topics=self.numberTopic)
+        return lda
+    def getWordTopic(self, wordDic):
+        wordTopicDic = {}
+        for word in wordDic:
+            singleList = [word]
+            wordcorpus = self.tfidfModel[self.dictionary.doc2bow(singleList)]
+            wordtopic = self.model[wordcorpus]
+            wordTopicDic[word] = wordtopic
+        return wordTopicDic
+
+    def getSimword(self, wordList):
+        sentcorpus = self.tfidfModel[self.dictionary.doc2bow(wordList)]
+        senttopic = self.model[sentcorpus]
+        def calsim(param1, param2):
+            a, b, c = 0.0, 0.0, 0.0
+            for t1, t2 in zip(param1, param2):
+                x1 = t1[1]
+                x2 = t2[1]
+                a += x1*x1
+                b += x1*x1
+                c += x2*x2
+            sim = a / math.sqrt(b * c) if not (b * c) == 0.0 else 0.0
+            return sim
+        simDic = {}
+        for key, value in self.wordTopicDic.items():
+            if key not in wordList:
+                continue
+            sim = calsim(value, senttopic)
+            simDic[key] = sim
+        for key, value in sorted(simDic.items(), key = functools.cmp_to_key(cmp), reverse=True)[:self.keywordNumber]:
+            print(key + "/ ", end="")
+        print()
+    def wordDictionary(self, docList):
+        dictionary = []
+        for doc in docList:
+            dictionary.extend(doc)
+        dictionary = list(set(dictionary))
+        return dictionary
+    def doc2bowvec(self, wordList):
+        vecList = [1 if word in wordList else 0 for word in self.dictionary]
+        return vecList
+
 ################
 # test
 ################
@@ -131,5 +201,7 @@ print("TF-IDF:")
 tfidfExtract(words)
 print("TextRank:")
 textrankExtract(text)
+print('LDA模型结果：')
+topicExtract(words, 'LDA', pos)
 
 
